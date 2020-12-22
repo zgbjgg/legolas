@@ -50,6 +50,10 @@ defmodule Legolas do
   end
   def add_collector(pid), do: raise ArgumentError, message: "[#{inspect __MODULE__}] the process `#{inspect pid}` is not a valid pid."
 
+  def add_struct(struct) do
+    GenServer.call(__MODULE__, {:add_struct, struct})
+  end
+
   @impl true
   def init([]) do
     # initializes dbg and other deps in order
@@ -75,17 +79,28 @@ defmodule Legolas do
     end
     {:reply, :ok, new_state}
   end
+  def handle_call({:add_struct, struct}, _from, state) do
+    new_state = case Keyword.get(state, :structs, []) do
+      [] -> Keyword.put(state, :structs, [struct])
+      _ -> Keyword.update!(state, :structs, &(&1 ++ [struct]))
+    end
+    {:reply, :ok, new_state}
+  end
 
   @impl true
-  def handle_cast({:handle_trace, _pid, :receive, phoenix_socket_message}, state) do
-    :ok = state
-      |> Keyword.get(:collectors)
-      |> Enum.each(&send(&1, {:phoenix_socket_message, phoenix_socket_message}))
+  def handle_cast({:handle_trace, _pid, :receive, message}, state) do
+    :ok = case Enum.member?(state[:structs], message.__struct__) do
+      true ->
+        :ok = state
+          |> Keyword.get(:collectors)
+          |> Enum.each(&send(&1, {:message, message}))
+      false -> :ok
+    end
     {:noreply, state}
   end
 
-  defp handle_trace({:trace, pid, :receive, %Phoenix.Socket.Message{} = phoenix_socket_message}, _acc) do
-    GenServer.cast(__MODULE__, {:handle_trace, pid, :receive, phoenix_socket_message})
+  defp handle_trace({:trace, pid, :receive, %_{} = message}, _acc) do
+    GenServer.cast(__MODULE__, {:handle_trace, pid, :receive, message})
     true
   end
   defp handle_trace(_ignored_messages, _acc), do: true

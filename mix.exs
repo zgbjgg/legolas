@@ -1,17 +1,19 @@
 defmodule Legolas.MixProject do
   use Mix.Project
 
+  @version "0.1.1"
+
   def project do
     [
       app: :legolas,
-      version: "0.1.0",
-      build_path: "../../_build",
-      config_path: "../../config/config.exs",
-      deps_path: "../../deps",
-      lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      version: @version,
+      elixir: "~> 1.2",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      package: package(),
+      deps: deps(),
+      description: """
+      Legolas - A process message interceptor for debug purposes
+      """
     ]
   end
 
@@ -25,10 +27,16 @@ defmodule Legolas.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
+    []
+  end
+
+  defp package do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
-      # {:sibling_app_in_umbrella, in_umbrella: true}
+      maintainers: ["Jorge Garrido"],
+      licenses: ["MIT"],
+      links: %{github: "https://github.com/zgbjgg/legolas"},
+      files:
+        ~w(lib LICENSE mix.exs README.md)
     ]
   end
 end

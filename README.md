@@ -38,7 +38,7 @@ Structs is a main patter to intercept messages and filter with that pattern. Add
 Now send a message to the target process and check how the collectors will receive the same message.
 
 @TODO: We need to support to handle multiple pattern matching for messages, for now Legolas supports to intercept
-messages a single Phoenix Socket Message
+messages with a defined struct (defstruct).
 
 ```elixir
     iex(4)> send self, %Middle.Earth.Orc{}

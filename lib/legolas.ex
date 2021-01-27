@@ -1,6 +1,6 @@
 defmodule Legolas do
   @moduledoc """
-  Legolas is a process message interceptor for debug purposes, under the hood
+  Legolas is a process message interceptor for debugging purposes, under the hood
   it uses `dbg` to trace calls over a single process. All received messages to the process
   are intercepted and sent to the designed collectors processes.
 
@@ -8,7 +8,7 @@ defmodule Legolas do
 
   In order to start, first add a target process (pid) to intercept messages.
 
-      iex(1)> Legolas.add_target self
+      iex(1)> Legolas.add_target self()
       :ok
 
   The above code will intercept all messages sent to the `self` process.
@@ -17,7 +17,7 @@ defmodule Legolas do
 
   A collector is a process (pid) that will receive all messages intercepted in the target processes.
 
-      iex(2)> Legolas.add_collector self
+      iex(2)> Legolas.add_collector self()
 
   In the above code `self` will receive all messages sent to targets processes.
 
@@ -34,9 +34,9 @@ defmodule Legolas do
   @TODO: We need to support to handle multiple pattern matching for messages, for now Legolas supports to intercept
   messages with a defined struct (defstruct).
 
-      iex(4)> send self, %Middle.Earth.Orc{}
+      iex(4)> send self(), %Middle.Earth.Orc{}
       %Middle.Earth.Orc{name: "Azog"}
-      iex(5)> flush()
+      iex(5)> IEx.Helpers.flush()
       %Middle.Earth.Orc{name: "Azog"}
       {:message, %Middle.Earth.Orc{name: "Azog"}}
       :ok
@@ -52,17 +52,45 @@ defmodule Legolas do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  @doc """
+  Add a target process to catch messages sent and received to it.
+
+  ## Example
+
+      iex(1)> Legolas.add_target self()
+      :ok
+  """
+  @spec add_target(pid(), Keyword.t()) :: :ok
   def add_target(pid_to, opts \\ [])
   def add_target(pid_to, opts) when is_pid(pid_to) do
     GenServer.call(__MODULE__, {:add_target, pid_to, opts})
   end
   def add_target(pid_to, _opts), do: raise ArgumentError, message: "[#{inspect __MODULE__}] the process `#{inspect pid_to}` is not a valid pid."
 
+  @doc """
+  Add a collector process to receive intercepted messages from targets.
+
+  ## Example
+
+      iex(1)> Legolas.add_collector self()
+      :ok
+  """
+  @spec add_collector(pid()) :: :ok
   def add_collector(pid) when is_pid(pid) do
     GenServer.call(__MODULE__, {:add_collector, pid})
   end
   def add_collector(pid), do: raise ArgumentError, message: "[#{inspect __MODULE__}] the process `#{inspect pid}` is not a valid pid."
 
+  @doc """
+  Add a struct to handle into patterns, so only messages with that struct
+  are added into buffer.
+
+  ## Example
+
+      iex(1)> Legolas.add_struct Middle.Earth.Orc
+      :ok
+  """
+  @spec add_struct(atom()) :: :ok
   def add_struct(struct) do
     GenServer.call(__MODULE__, {:add_struct, struct})
   end

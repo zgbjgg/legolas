@@ -1,6 +1,6 @@
-# Legolas
+# Legolas >>>--->
 
-Legolas is a process message interceptor for debug purposes, under the hood
+Legolas is a process message interceptor for debugging purposes, under the hood
 it uses `dbg` to trace calls over a single process. All received messages to the process
 are intercepted and sent to the designed collectors processes.
 
